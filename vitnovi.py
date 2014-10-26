@@ -57,7 +57,17 @@ def mylog(x):
         return -100000000000000
     else:
         return math.log(x)
+
 put=dict()
+
+def vrati_put(p,k,l):
+    if k==0 and l==0:
+        return [0]
+    prije=p[(k,l)]
+    vp=vrati_put(p,prije[0],prije[1])
+    vp.append(k)
+    return vp
+
 def viterbi(a):
     L=len(a)
     x=[]
@@ -80,32 +90,39 @@ def viterbi(a):
                            VI[i][razina-1]+mylog(T[razina-1][1][0]),
                            VD[i][razina-1]+mylog(T[razina-1][2][0])],[0,1,2]))
                 VM[i][razina]=m[0]
-                put[(st,i)]=(razina-1,m[1])
+                if VM[i][razina]<-100000000000000:
+                    VM[i][razina]=-100000000000000
+                put[(st,i)]=((razina-1)*3+m[1],i)
 
             elif j==0:   
                 m=max(zip([VM[i-1][razina-1]+mylog(T[razina][0][0]),
                            VI[i-1][razina-1]+mylog(T[razina][1][0]),
                            VD[i-1][razina-1]+mylog(T[razina][2][0])],[0,1,2]))
                 VM[i][razina]=m[0]+mylog(Me[razina][ak.index(x[i-1])])
-                put[(st,i)]=(razina-1,m[1])
+                if VM[i][razina]<-100000000000000:
+                    VM[i][razina]=-100000000000000
+                put[(st,i)]=((razina-1)*3+m[1],i-1)
                 print "stanje %d,%d= %f" %(st,i,VM[i][razina])
             elif j==1:
                 m=max(zip([VM[i-1][razina]+mylog(T[razina][0][1]),
                            VI[i-1][razina]+mylog(T[razina][1][1]),
                            VD[i-1][razina]+mylog(T[razina][2][1])],[0,1,2]))
                 VI[i][razina]=m[0]+mylog(Ie[razina][ak.index(x[i-1])])
-                put[(st,i)]=(razina,m[1])
+                if VI[i][razina]<-100000000000000:
+                    VI[i][razina]=-100000000000000
+                put[(st,i)]=(razina*3+m[1],i-1)
                 print "stanje %d,%d= %f" %(st,i,VI[i][razina]) 
             elif j==2:
                 m=max(zip([VM[i][razina-1]+mylog(T[razina][0][2]),
                       VI[i][razina-1]+mylog(T[razina][1][2]),
                       VD[i][razina-1]+mylog(T[razina][2][2])],[0,1,2]))
                 VD[i][razina]=m[0]
-                put[(st,i)]=(razina-1,m[1])
+                if m[0]<-100000000000000:
+                    VD[i][razina]=-100000000000000
+                put[(st,i)]=((razina-1)*3+m[1],i)
                 print "stanje %d,%d= %f" %(st,i,VD[i][razina])
-    p=math.exp(max(VM[L][:]))
-    
-    return VM,p
+    p=math.exp(VM[L][dmod+1])
+    return vrati_put(put,(dmod+1)*3,L),p
 
 vv=viterbi(['H','P','E','W'])
 
