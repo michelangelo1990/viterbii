@@ -81,8 +81,8 @@ def viterbi(a):
     VM[0][0]=0
     
     
-    for st in range(1,(dmod+1)*3+1):
-        for i in range(1,L+1):
+    for i in xrange(0,L+1):
+        for st in xrange(0,(dmod+1)*3+1):
             j=(st)%3
             razina=st/3
             if razina==dmod+1:
@@ -94,7 +94,7 @@ def viterbi(a):
                     VM[i][razina]=-100000000000000
                 put[(st,i)]=((razina-1)*3+m[1],i)
 
-            elif j==0:   
+            elif j==0 and razina>0:   
                 m=max(zip([VM[i-1][razina-1]+mylog(T[razina][0][0]),
                            VI[i-1][razina-1]+mylog(T[razina][1][0]),
                            VD[i-1][razina-1]+mylog(T[razina][2][0])],[0,1,2]))
@@ -103,7 +103,7 @@ def viterbi(a):
                     VM[i][razina]=-100000000000000
                 put[(st,i)]=((razina-1)*3+m[1],i-1)
                 print "stanje %d,%d= %f" %(st,i,VM[i][razina])
-            elif j==1:
+            elif j==1 and razina>0:
                 m=max(zip([VM[i-1][razina]+mylog(T[razina][0][1]),
                            VI[i-1][razina]+mylog(T[razina][1][1]),
                            VD[i-1][razina]+mylog(T[razina][2][1])],[0,1,2]))
@@ -122,9 +122,48 @@ def viterbi(a):
                 put[(st,i)]=((razina-1)*3+m[1],i)
                 print "stanje %d,%d= %f" %(st,i,VD[i][razina])
     p=math.exp(VM[L][dmod+1])
+
+    print VD
+    
+    #V=[[0 for i in range((dmod+1)*3+1)] for j in range(L+1)]
+    #raz=0
+    #for j in range((dmod+1)*3):
+    #        if j%3==0:
+    #            V[:][j]=VM[:][raz]
+    #        elif j%3==1:
+    #            V[:][j]=VI[:][raz]
+    #        elif j%3==2:
+    #            V[:][j]=VD[:][raz]
+    #            raz=raz+1
+                
+    #V[:][j+1]=VM[:][(j+1)/3]
+     
     return vrati_put(put,(dmod+1)*3,L),p
 
-vv=viterbi(['H','P','E','W'])
+vv=viterbi(['P'])
+
+for i in range(len(vv[0])):
+    if i==0:
+        print 'B'
+    elif i==len(vv[0])-1:
+        print 'E'
+    elif vv[0][i]%3==0:
+        print 'M',int(vv[0][i]/3)
+    elif vv[0][i]%3==1:
+        print 'I',int(vv[0][i]/3)
+    elif vv[0][i]%3==2:
+        print 'D',int(vv[0][i]/3)
+
+
+print 'Vjerojatnost prolaska kroz model je %f'%vv[1]
+
+import string
+
+max_lens = [max([len(str(r[i])) for r in vv[2]])
+                for i in range(len(vv[2][0]))]
+
+print "\n".join(["".join([string.ljust(str(e), l + 2)
+                for e, l in zip(r, max_lens)]) for r in vv[2]])
 
 
 
@@ -134,18 +173,4 @@ vv=viterbi(['H','P','E','W'])
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
+        
